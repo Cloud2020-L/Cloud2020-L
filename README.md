@@ -33,7 +33,7 @@
 | **RAG / Search** | Embedding · Chroma · Qdrant · OpenSearch · Hybrid Retrieval · Rerank · 引用校验 |
 | **Backend** | TypeScript · Node.js · NestJS · TypeORM · Python · FastAPI |
 | **Frontend** | React · TypeScript · JavaScript · Vite |
-| **Data & Tasks** | MySQL · PostgreSQL · Redis · RQ |
+| **Data** | MySQL · PostgreSQL |
 | **DevOps** | Docker Compose · Nginx · Linux · Git |
 | **Mobile（过往实践）** | Swift · Flutter · Provider · AI 图像处理 API |
 
@@ -80,9 +80,9 @@ flowchart TD
 
 ### 🌐 GEO / AI 可见性增长平台 · 全栈开发
 
-- 参与基于 **React、FastAPI、PostgreSQL、Redis/RQ、Qdrant** 的平台搭建与维护，覆盖诊断、内容生成、分发、复测及计费等业务环节。
+- 参与基于 **React、FastAPI、PostgreSQL、Qdrant** 的平台搭建与维护，覆盖诊断、内容生成、分发、复测及计费等业务环节。
 - 负责多门户前端构建部署、接口代理与静态资源发布，并参与多租户权限、客户数据隔离及计费模块优化。
-- 使用 **Docker Compose** 编排 PostgreSQL、Qdrant、Redis、FastAPI、RQ Worker 与 Nginx，推动服务拆分部署。
+- 使用 **Docker Compose** 编排 PostgreSQL、Qdrant、FastAPI 与 Nginx，推动服务拆分部署。
 
 ### 📱 iOS 工具类产品 · 移动端开发
 
