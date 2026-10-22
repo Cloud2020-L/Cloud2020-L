@@ -45,6 +45,12 @@
 
 面向中医典籍的查阅与知识问答场景，在 CMS 基础上构建**结构化检索、语义检索、多轮对话和原文证据引用**能力，由 Agent 根据问题选择检索、补查或澄清，再生成可追溯出处的回答。
 
+**🎬 项目演示视频（约 2 分 59 秒）**
+
+[![中医典籍知识问答 Agent 演示视频封面](https://raw.githubusercontent.com/Cloud2020-L/agent_mp4/main/demo-cover.jpg)](https://github.com/Cloud2020-L/agent_mp4#演示视频)
+
+[▶ 观看演示视频](https://github.com/Cloud2020-L/agent_mp4#演示视频) · [下载完整 MP4](https://github.com/Cloud2020-L/agent_mp4/blob/main/%E6%BC%94%E7%A4%BA%E8%A7%86%E9%A2%91-GitHub%E7%89%88.mp4?raw=true) · [演示视频仓库](https://github.com/Cloud2020-L/agent_mp4)
+
 **核心设计：**
 
 - **Agent 工作流**：LangGraph 外层业务图与内层取证子图分工，统一同步与流式入口的业务流程。
@@ -55,24 +61,52 @@
 - **测试与排查**：覆盖工作流分支、检索来源、引用约束、异常降级和流式取消，配合分阶段日志排查链路问题。
 
 <details>
-<summary><b>查看简化技术流程</b></summary>
+<summary><b>查看 Agent 双层图结构（核心架构）</b></summary>
+
+**架构职责：** 外层业务图负责统一入口、证据整理、正文生成与结果输出；内层取证子图负责检索决策、结构化/混合检索、受控补查和取证状态返回。
 
 ```mermaid
-flowchart TD
-    U["用户问题"] --> A["LangGraph Agent"]
-    A --> D{"问题类型 / 检索决策"}
-    D -->|"条目、字段"| S["MySQL 结构化检索"]
-    D -->|"开放式问题"| V["Chroma 向量检索"]
-    D -->|"开放式问题"| K["OpenSearch 关键词检索"]
-    V --> F["候选融合 + Rerank"]
-    K --> F
-    S --> E["证据整理与引用校验"]
-    F --> E
-    E --> G["生成带出处的回答"]
-    G --> R["SSE 流式输出 / 会话保存"]
+flowchart TB
+    USER["用户问题"]
+
+    subgraph OUTER["外层业务图｜业务编排与回答生成"]
+        direction TB
+        ENTRY["统一入口：同步 / 流式"]
+        CONTEXT["请求与会话上下文准备"]
+
+        subgraph INNER["内层取证子图｜检索决策与受控补查"]
+            direction TB
+            DECIDE{"检索 / 澄清决策"}
+            STRUCT["MySQL 结构化检索"]
+            HYBRID["Chroma 向量 + OpenSearch 关键词召回"]
+            RERANK["候选融合与 Rerank"]
+            CHECK{"是否需要补查？"}
+            REQUERY["问题改写 / 限次补查"]
+            EVIDENCE_RESULT["返回证据或无证据状态"]
+            CLARIFY["返回澄清需求"]
+
+            DECIDE -->|"章节 / 条目 / 字段"| STRUCT
+            DECIDE -->|"开放式问题"| HYBRID
+            DECIDE -->|"需要澄清"| CLARIFY
+            STRUCT --> CHECK
+            HYBRID --> RERANK --> CHECK
+            CHECK -->|"需要，且未超限"| REQUERY --> DECIDE
+            CHECK -->|"结束或达到限制"| EVIDENCE_RESULT
+        end
+
+        PROCESS["证据去重 · 来源定位 · 引用校验"]
+        ANSWER["基于证据生成回答 / 明确说明缺证据"]
+        OUTPUT["结果封装 · SSE 输出 · 会话保存"]
+
+        ENTRY --> CONTEXT --> DECIDE
+        EVIDENCE_RESULT --> PROCESS --> ANSWER --> OUTPUT
+        CLARIFY --> OUTPUT
+    end
+
+    USER --> ENTRY
 ```
 
-> 示意图仅展示简化后的核心检索与生成链路。
+> 架构示意：突出外层业务编排与内层取证决策的分工，省略实际代码中的状态传递、异常处理、缓存、取消信号等实现细节；并非逐节点的源码拓扑。
 
 </details>
 
